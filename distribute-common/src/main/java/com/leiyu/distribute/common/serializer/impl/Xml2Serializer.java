@@ -1,6 +1,7 @@
 package com.leiyu.distribute.common.serializer.impl;
 
 import com.leiyu.distribute.common.serializer.ISerializer;
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -39,9 +40,22 @@ public class Xml2Serializer implements ISerializer {
     }
 
     public <T> T deserialize(byte[] data, Class<T> clazz) {
-        XMLDecoder xd = new XMLDecoder(new ByteArrayInputStream(data));
-        Object obj = xd.readObject();
-        xd.close();
-        return (T) obj;
+        ByteArrayInputStream inputStream = null;
+        try {
+            inputStream = new ByteArrayInputStream(data);
+            XMLDecoder xd = new XMLDecoder(inputStream);
+            Object obj = xd.readObject();
+            xd.close();
+            return (T) obj;
+        }finally {
+            if(null != inputStream){
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 }
