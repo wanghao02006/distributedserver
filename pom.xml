@@ -13,6 +13,7 @@
         <module>RMIRpcServer</module>
         <module>SocketRPCServer</module>
         <module>distribute-common</module>
+        <module>distribute-core</module>
     </modules>
 
 
