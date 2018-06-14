@@ -1,8 +1,16 @@
 package com.leiyu.distribute.core.provider;
 
+import com.google.common.collect.Lists;
+import com.leiyu.distribute.common.utils.IPHelper;
+import com.leiyu.distribute.core.model.ProviderService;
+import com.leiyu.distribute.core.zk.IRegisterCenter4Provider;
+import com.leiyu.distribute.core.zk.RegisterCenter;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.lang.Nullable;
+
+import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * @Project: distributedserver
@@ -55,7 +63,33 @@ public class ProviderFactoryBean implements FactoryBean,InitializingBean {
     }
 
     public void afterPropertiesSet() throws Exception {
-//        NettyS
+        //启动Netty服务端
+        NettyServer.getInstance().start(Integer.parseInt(serverPort));
+
+        //注册到zk,元数据注册中心
+        List<ProviderService> providerServiceList = buildProviderServiceInfos();
+        IRegisterCenter4Provider registerCenter4Provider = RegisterCenter.getInstance();
+        registerCenter4Provider.registerProvider(providerServiceList);
+    }
+
+    private List<ProviderService> buildProviderServiceInfos() {
+        List<ProviderService> providerList = Lists.newArrayList();
+        Method[] methods = serviceObject.getClass().getDeclaredMethods();
+        for (Method method : methods) {
+            ProviderService providerService = new ProviderService();
+            providerService.setServiceItf(serviceItf);
+            providerService.setServiceObject(serviceObject);
+            providerService.setServerIp(IPHelper.localIp());
+            providerService.setServerPort(Integer.parseInt(serverPort));
+            providerService.setTimeout(timeout);
+            providerService.setServiceMethod(method);
+            providerService.setWeight(weight);
+            providerService.setWorkerThreads(workerThreads);
+            providerService.setAppKey(appKey);
+            providerService.setGroupName(groupName);
+            providerList.add(providerService);
+        }
+        return providerList;
     }
 
     public Class<?> getServiceItf() {

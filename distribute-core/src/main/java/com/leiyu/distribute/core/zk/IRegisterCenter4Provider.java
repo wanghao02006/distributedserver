@@ -1,6 +1,6 @@
 package com.leiyu.distribute.core.zk;
 
-import com.leiyu.distribute.model.ProviderService;
+import com.leiyu.distribute.core.model.ProviderService;
 
 import java.util.List;
 import java.util.Map;

@@ -1,7 +1,7 @@
 package com.leiyu.distribute.core.zk;
 
-import com.leiyu.distribute.model.InvokerService;
-import com.leiyu.distribute.model.ProviderService;
+import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ProviderService;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import java.util.Map;
  * @Author: wanghao30
  * @Creation Date: 2018-05-28
  */
-public interface IRegisterCenter4Invoker {
+public interface IRegisterCenter4Consumer {
 
     /**
      * 消费端初始化服务提供者信息本地缓存

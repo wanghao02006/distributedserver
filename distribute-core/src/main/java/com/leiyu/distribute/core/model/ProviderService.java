@@ -1,4 +1,4 @@
-package com.leiyu.distribute.model;
+package com.leiyu.distribute.core.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

@@ -19,6 +19,7 @@ public class SerializerEngine {
     public static final Map<SerializeType,ISerializer> SERIALIZER_MAP = Maps.newConcurrentMap();
 
     static {
+        System.out.println("11111111111111111111");
         SERIALIZER_MAP.put(SerializeType.DefaultJavaSerializer,new DefaultJavaSerializer());
         SERIALIZER_MAP.put(SerializeType.HessianSerializer,new HessianSerializer());
         SERIALIZER_MAP.put(SerializeType.JsonSerializer,new JsonSerializer());

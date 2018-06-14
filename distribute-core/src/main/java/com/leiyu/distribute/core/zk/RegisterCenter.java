@@ -2,18 +2,18 @@ package com.leiyu.distribute.core.zk;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.leiyu.distribute.common.utils.IPHelper;
 import com.leiyu.distribute.common.utils.PropertyConfigeHelper;
-import com.leiyu.distribute.model.InvokerService;
-import com.leiyu.distribute.model.ProviderService;
+import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ProviderService;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.SerializableSerializer;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.Map;
  * @Author: wanghao30
  * @Creation Date: 2018-05-28
  */
-public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4Invoker {
+public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4Consumer,IRegisterCenter4Governance {
 
     private static final Map<String,List<ProviderService>> providerServiceMap = Maps.newConcurrentMap();
 
@@ -47,6 +47,95 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
 
     private RegisterCenter(){
 
+    }
+
+    /**
+     * 获取服务提供者与服务消费者列表
+     * @param serviceName
+     * @param appKey
+     * @return
+     */
+    public Pair<List<ProviderService>, List<InvokerService>> queryProvidersAndInvokers(String serviceName, String appKey) {
+        //服务消费者列表
+        List<InvokerService> invokerServices = Lists.newArrayList();
+        //服务提供者列表
+        List<ProviderService> providerServices = Lists.newArrayList();
+
+        //连接zk
+        if (zkClient == null) {
+            synchronized (RegisterCenter.class) {
+                if (zkClient == null) {
+                    zkClient = new ZkClient(ZK_SERVICE, ZK_SESSION_TIME_OUT, ZK_CONNECTION_TIME_OUT, new SerializableSerializer());
+                }
+            }
+        }
+
+        String parentPath = ROOT_PATH + "/" + appKey;
+        //获取 ROOT_PATH + APP_KEY注册中心子目录列表
+        List<String> groupServiceList = zkClient.getChildren(parentPath);
+        if (CollectionUtils.isEmpty(groupServiceList)) {
+            return Pair.of(providerServices, invokerServices);
+        }
+
+        for (String group : groupServiceList) {
+            String groupPath = parentPath + "/" + group;
+            //获取ROOT_PATH + APP_KEY + group 注册中心子目录列表
+            List<String> serviceList = zkClient.getChildren(groupPath);
+            if (CollectionUtils.isEmpty(serviceList)) {
+                continue;
+            }
+            for (String service : serviceList) {
+                //获取ROOT_PATH + APP_KEY + group +service 注册中心子目录列表
+                String servicePath = groupPath + "/" + service;
+                List<String> serviceTypes = zkClient.getChildren(servicePath);
+                if (CollectionUtils.isEmpty(serviceTypes)) {
+                    continue;
+                }
+                for (String serviceType : serviceTypes) {
+                    if (StringUtils.equals(serviceType, PROVIDER_TYPE)) {
+                        //获取ROOT_PATH + APP_KEY + group +service+serviceType 注册中心子目录列表
+                        String providerPath = servicePath + "/" + serviceType;
+                        List<String> providers = zkClient.getChildren(providerPath);
+                        if (CollectionUtils.isEmpty(providers)) {
+                            continue;
+                        }
+
+                        //获取服务提供者信息
+                        for (String provider : providers) {
+                            String[] providerNodeArr = StringUtils.split(provider, "|");
+
+                            ProviderService providerService = new ProviderService();
+                            providerService.setAppKey(appKey);
+                            providerService.setGroupName(group);
+                            providerService.setServerIp(providerNodeArr[0]);
+                            providerService.setServerPort(Integer.parseInt(providerNodeArr[1]));
+                            providerService.setWeight(Integer.parseInt(providerNodeArr[2]));
+                            providerService.setWorkerThreads(Integer.parseInt(providerNodeArr[3]));
+                            providerServices.add(providerService);
+                        }
+
+                    } else if (StringUtils.equals(serviceType, INVOKER_TYPE)) {
+                        //获取ROOT_PATH + APP_KEY + group +service+serviceType 注册中心子目录列表
+                        String invokerPath = servicePath + "/" + serviceType;
+                        List<String> invokers = zkClient.getChildren(invokerPath);
+                        if (CollectionUtils.isEmpty(invokers)) {
+                            continue;
+                        }
+
+                        //获取服务消费者信息
+                        for (String invoker : invokers) {
+                            InvokerService invokerService = new InvokerService();
+                            invokerService.setRemoteAppKey(appKey);
+                            invokerService.setGroupName(group);
+                            invokerService.setInvokerIp(invoker);
+                            invokerServices.add(invokerService);
+                        }
+                    }
+                }
+            }
+
+        }
+        return Pair.of(providerServices, invokerServices);
     }
 
     /**
@@ -205,7 +294,10 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
         }
     }
 
-    //利用ZK自动刷新当前存活的服务提供者列表数据
+    /**
+     * 刷新提供者列表
+     * @param serviceIpList
+     */
     private void refreshActivityService(List<String> serviceIpList) {
         if (serviceIpList == null) {
             serviceIpList = Lists.newArrayList();
@@ -233,6 +325,12 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
         providerServiceMap.putAll(currentServiceMetaDataMap);
     }
 
+    /**
+     * 消费端初始化服务提供者信息
+     * @param remoteAppKey
+     * @param groupName
+     * @return
+     */
     private Map<String, List<ProviderService>> fetchOrUpdateServiceMetaData(String remoteAppKey, String groupName) {
         final Map<String, List<ProviderService>> providerServiceMap = Maps.newConcurrentMap();
         //连接zk
@@ -296,6 +394,10 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
         return providerServiceMap;
     }
 
+    /**
+     * 刷新消费提供者列表
+     * @param serviceIpList
+     */
     private void refreshServiceMetaDataMap(List<String> serviceIpList) {
         if (serviceIpList == null) {
             serviceIpList = Lists.newArrayList();

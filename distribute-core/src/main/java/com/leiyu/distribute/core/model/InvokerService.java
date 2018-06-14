@@ -1,11 +1,14 @@
-package com.leiyu.distribute.model;
+package com.leiyu.distribute.core.model;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
 /**
- *
- *
+ * @Project: distributedserver
+ * @Package Name: com.leiyu.distribute.core.provider
+ * @Description: TODO
+ * @Author: wanghao30
+ * @Creation Date: 2018-05-26
  */
 public class InvokerService implements Serializable {
 

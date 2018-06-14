@@ -1,0 +1,2 @@
+http\://www.leiyu-remote.com/schema/provider=com.leiyu.distribute.core.spring.ProviderNamespaceHandler
+http\://www.leiyu-remote.com/schema/consumer=ares.remoting.framework.spring.AresRemoteReferenceNamespaceHandler
