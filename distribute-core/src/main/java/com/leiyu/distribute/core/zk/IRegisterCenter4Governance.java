@@ -1,6 +1,6 @@
 package com.leiyu.distribute.core.zk;
 
-import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ConsumerService;
 import com.leiyu.distribute.core.model.ProviderService;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -21,5 +21,5 @@ public interface IRegisterCenter4Governance {
      * @param appKey
      * @return
      */
-    public Pair<List<ProviderService>, List<InvokerService>> queryProvidersAndInvokers(String serviceName, String appKey);
+    public Pair<List<ProviderService>, List<ConsumerService>> queryProvidersAndInvokers(String serviceName, String appKey);
 }

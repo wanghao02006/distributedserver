@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.leiyu.distribute.common.utils.IPHelper;
 import com.leiyu.distribute.common.utils.PropertyConfigeHelper;
-import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ConsumerService;
 import com.leiyu.distribute.core.model.ProviderService;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -55,9 +55,9 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
      * @param appKey
      * @return
      */
-    public Pair<List<ProviderService>, List<InvokerService>> queryProvidersAndInvokers(String serviceName, String appKey) {
+    public Pair<List<ProviderService>, List<ConsumerService>> queryProvidersAndInvokers(String serviceName, String appKey) {
         //服务消费者列表
-        List<InvokerService> invokerServices = Lists.newArrayList();
+        List<ConsumerService> consumerServices = Lists.newArrayList();
         //服务提供者列表
         List<ProviderService> providerServices = Lists.newArrayList();
 
@@ -74,7 +74,7 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
         //获取 ROOT_PATH + APP_KEY注册中心子目录列表
         List<String> groupServiceList = zkClient.getChildren(parentPath);
         if (CollectionUtils.isEmpty(groupServiceList)) {
-            return Pair.of(providerServices, invokerServices);
+            return Pair.of(providerServices, consumerServices);
         }
 
         for (String group : groupServiceList) {
@@ -124,18 +124,18 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
 
                         //获取服务消费者信息
                         for (String invoker : invokers) {
-                            InvokerService invokerService = new InvokerService();
-                            invokerService.setRemoteAppKey(appKey);
-                            invokerService.setGroupName(group);
-                            invokerService.setInvokerIp(invoker);
-                            invokerServices.add(invokerService);
+                            ConsumerService consumerService = new ConsumerService();
+                            consumerService.setRemoteAppKey(appKey);
+                            consumerService.setGroupName(group);
+                            consumerService.setInvokerIp(invoker);
+                            consumerServices.add(consumerService);
                         }
                     }
                 }
             }
 
         }
-        return Pair.of(providerServices, invokerServices);
+        return Pair.of(providerServices, consumerServices);
     }
 
     /**
@@ -255,7 +255,7 @@ public class RegisterCenter implements IRegisterCenter4Provider,IRegisterCenter4
      * 消费端将消费者注册到zk节点下
      * @param invoker
      */
-    public void registerInvoker(InvokerService invoker) {
+    public void registerInvoker(ConsumerService invoker) {
         if (invoker == null) {
             return;
         }

@@ -1,6 +1,7 @@
 package com.leiyu.distribute.core.spring;
 
 
+import com.leiyu.distribute.core.consumer.ConsumerFactoryBean;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +21,14 @@ public class ConsumerBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
     private static final Logger logger = LoggerFactory.getLogger(ConsumerBeanDefinitionParser.class);
 
     protected Class getBeanClass(Element element) {
-//        return RevokerFactoryBean.class;
-        // TODO
-        return null;
+        return ConsumerFactoryBean.class;
     }
 
+    /**
+     * 解析标签，生成springbean
+     * @param element
+     * @param bean
+     */
     protected void doParse(Element element, BeanDefinitionBuilder bean) {
 
         try {
@@ -38,7 +42,7 @@ public class ConsumerBeanDefinitionParser extends AbstractSingleBeanDefinitionPa
             bean.addPropertyValue("targetInterface", Class.forName(targetInterface));
             bean.addPropertyValue("remoteAppKey", remoteAppKey);
 
-            if (StringUtils.isNotBlank(clusterStrategy)) {
+            if (StringUtils.isNotBlank(clusterStrategy)) {//负载均衡算法
                 bean.addPropertyValue("clusterStrategy", clusterStrategy);
             }
             if (StringUtils.isNotBlank(groupName)) {

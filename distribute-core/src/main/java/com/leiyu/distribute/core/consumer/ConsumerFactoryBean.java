@@ -1,6 +1,6 @@
 package com.leiyu.distribute.core.consumer;
 
-import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ConsumerService;
 import com.leiyu.distribute.core.model.ProviderService;
 import com.leiyu.distribute.core.zk.IRegisterCenter4Consumer;
 import com.leiyu.distribute.core.zk.RegisterCenter;
@@ -74,7 +74,7 @@ public class ConsumerFactoryBean implements FactoryBean,InitializingBean{
         this.serviceObject = proxyFactory.getProxy();
 
         //将消费者信息注册到注册中心
-        InvokerService invoker = new InvokerService();
+        ConsumerService invoker = new ConsumerService();
         invoker.setServiceItf(targetInterface);
         invoker.setRemoteAppKey(remoteAppKey);
         invoker.setGroupName(groupName);

@@ -1,6 +1,6 @@
 package com.leiyu.distribute.core.zk;
 
-import com.leiyu.distribute.core.model.InvokerService;
+import com.leiyu.distribute.core.model.ConsumerService;
 import com.leiyu.distribute.core.model.ProviderService;
 
 import java.util.List;
@@ -30,5 +30,5 @@ public interface IRegisterCenter4Consumer {
      * 消费端将消费者注册到zk节点下
      * @param invoker
      */
-    void registerInvoker(final InvokerService invoker);
+    void registerInvoker(final ConsumerService invoker);
 }

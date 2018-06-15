@@ -10,7 +10,7 @@ import java.lang.reflect.Method;
  * @Author: wanghao30
  * @Creation Date: 2018-05-26
  */
-public class InvokerService implements Serializable {
+public class ConsumerService implements Serializable {
 
     private Class<?> serviceItf;
     private Object serviceObject;
